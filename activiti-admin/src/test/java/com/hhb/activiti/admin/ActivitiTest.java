@@ -1,79 +1,74 @@
 package com.hhb.activiti.admin;
 
-import com.hhb.activiti.admin.utils.SecurityUtil;
-import org.activiti.api.process.model.ProcessDefinition;
-import org.activiti.api.process.model.ProcessInstance;
-import org.activiti.api.process.model.builders.ProcessPayloadBuilder;
-import org.activiti.api.process.runtime.ProcessRuntime;
-import org.activiti.api.runtime.shared.query.Page;
-import org.activiti.api.runtime.shared.query.Pageable;
-import org.activiti.api.task.model.Task;
-import org.activiti.api.task.model.builders.TaskPayloadBuilder;
-import org.activiti.api.task.runtime.TaskRuntime;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.repository.Deployment;
+import org.activiti.engine.repository.ProcessDefinition;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
 
 /**
  * @author huanghebin
  * @date 2020/9/17 10:42
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 public class ActivitiTest {
 
 	@Autowired
-	private ProcessRuntime processRuntime;
-	@Autowired
-	private TaskRuntime taskRuntime;
-	@Autowired
-	private SecurityUtil securityUtil;
+	private RepositoryService repositoryService;
 
+	/**
+	 * 部署bpmn文件
+	 */
 	@Test
-	public void contextLoads() {
-		securityUtil.logInAs("salaboy");
-		Page<ProcessDefinition> processDefinitionPage = processRuntime.processDefinitions(Pageable.of(0, 10));
-		System.out.println("可用的流程定义数量：" + processDefinitionPage.getTotalItems());
-		for (ProcessDefinition pd : processDefinitionPage.getContent()) {
-			System.out.println("流程定义：" + pd);
-		}
+	public void initDeployment() {
+		String fileName = "bpmn/Test.bpmn";
+		Deployment deployment = repositoryService.createDeployment()
+				.addClasspathResource(fileName)
+				.name("流程部署测试1")
+				.deploy();
+		System.out.println(deployment.getName());
 	}
 
+	/**
+	 * 查询流程部署
+	 */
 	@Test
-	public void testStartProcess() {
-//		securityUtil.logInAs("salaboy");
-		ProcessInstance pi = processRuntime
-				.start(ProcessPayloadBuilder
-						.start()
-						.withProcessDefinitionKey("myProcess_1")
-						.build());
-		System.out.println("流程实例 ID：" + pi.getId());
+	public void getDeployment() {
+		List<Deployment> list = repositoryService.createDeploymentQuery().list();
+		list.forEach(deployment -> {
+			System.out.println(deployment.getName());
+			System.out.println(deployment.getCategory());
+			System.out.println(deployment.getId());
+			System.out.println(deployment.getDeploymentTime());
+			System.out.println("------------");
+		});
 	}
 
+	/**
+	 * 查询流程定义
+	 */
 	@Test
-	public void testTask() {
-		securityUtil.logInAs("ryandawsonuk");
-		Page<Task> taskPage = taskRuntime.tasks(Pageable.of(0, 10));
-		if (taskPage.getTotalItems() > 0) {
-			for (Task task : taskPage.getContent()) {
-//				// 拾取任务
-//				taskRuntime.claim(TaskPayloadBuilder
-//						.claim()
-//						.withTaskId(task.getId())
-//						.build());
-//				System.out.println("任务：" + task);
+	public void getDefinitions() {
+		List<ProcessDefinition> list = repositoryService.createProcessDefinitionQuery().list();
+		list.forEach(definition -> {
+			System.out.println(definition.getName());
+			System.out.println(definition.getId());
+			System.out.println(definition.getDeploymentId());
+			System.out.println(definition.getResourceName());
+			System.out.println(definition.getKey());
+		});
+	}
 
-				// 完成任务
-				taskRuntime.complete(TaskPayloadBuilder
-						.complete()
-						.withTaskId(task.getId())
-						.build());
-			}
-		}
-
-		Page<Task> taskPage2 = taskRuntime.tasks(Pageable.of(0, 10));
-		System.out.println(taskPage2.getTotalItems());
+	/**
+	 * 删除部署
+	 */
+	@Test
+	public void deleteDeployment() {
+		String pdID = "7077e788-fe7b-11ea-b082-5c3a4551df3d";
+		// true：删除所有历史记录，false：只删除部署
+		repositoryService.deleteDeployment(pdID, true);
 	}
 }
