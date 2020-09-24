@@ -13,9 +13,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.hhb</groupId>
-    <artifactId>acti-demo</artifactId>
+    <artifactId>activiti-demo</artifactId>
     <version>1.0.0</version>
-    <name>acti-demo</name>
+    <name>activiti-demo</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
