@@ -1,0 +1,17 @@
+server:
+  port: 8090
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/activiti?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # 历史记录表
+  activiti:
+    history-level: full
+    db-history-used: true
+    # 自动部署验证设置:true-开启（默认）、false-关闭
+    check-process-definitions: false
+
+
