@@ -179,6 +179,9 @@ public class ActivitiTest {
 		taskService.setAssignee("fa718cdf-ff0b-11ea-8177-105bad8fe669", "wukong");
 	}
 
+	/**
+	 * 查看历史
+	 */
 	@Test
 	public void history() {
 		List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
@@ -191,6 +194,53 @@ public class ActivitiTest {
 			System.out.println(instance.getProcessInstanceId());
 			System.out.println(instance.getProcessDefinitionId());
 			System.out.println(instance.getName());
+		});
+	}
+
+	/**
+	 * 并行 Part1
+	 */
+	@Test
+	public void parallel() {
+		String fileName = "bpmn/Parallel.bpmn";
+		Deployment deployment = repositoryService.createDeployment()
+				.addClasspathResource(fileName)
+				.name("并行网关测试")
+				.deploy();
+		System.out.println(deployment.getName());
+		System.out.println("--------------------");
+		ProcessInstance pi = runtimeService.startProcessInstanceByKey("myProcess_parallel", "businessKey_parallel");
+		System.out.println(pi.getProcessDefinitionId());
+		System.out.println(pi.getName());
+		System.out.println("--------------------");
+		List<Task> list = taskService.createTaskQuery().taskAssignee("bajie").list();
+		list.forEach(task -> {
+			System.out.println(task.getId());
+			System.out.println(task.getName());
+			System.out.println(task.getAssignee());
+			System.out.println("--------------------");
+			taskService.complete(task.getId());
+		});
+	}
+
+	@Test
+	public void parallel2() {
+		List<Task> list1 = taskService.createTaskQuery().taskAssignee("wukong").list();
+		List<Task> list2 = taskService.createTaskQuery().taskAssignee("tangseng").list();
+		list1.forEach(task -> {
+			System.out.println(task.getProcessInstanceId());
+			System.out.println(task.getId());
+			System.out.println(task.getName());
+			System.out.println(task.getAssignee());
+//			taskService.complete(task.getId());
+		});
+		System.out.println("-----------");
+		list2.forEach(task -> {
+			System.out.println(task.getProcessInstanceId());
+			System.out.println(task.getId());
+			System.out.println(task.getName());
+			System.out.println(task.getAssignee());
+			taskService.complete(task.getId());
 		});
 	}
 }
